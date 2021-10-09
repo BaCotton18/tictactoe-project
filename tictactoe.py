@@ -35,7 +35,8 @@ def player(board):
                 player_o += 1
     if player_x == player_o:
         return X
-    return O
+    elif player_x > player_o:
+        return O
 
 
 def actions(board):
@@ -109,11 +110,15 @@ def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    # call winner to check for a possible winner
-    if winner(board) == None or winner(board) == X or winner(board) == O:
+    # Returns true if anyone has won
+    if winner(board) == X or winner(board) == O:
         return True
-    else:
-        return False
+    # Checks the board for any empty spaces. Returns False if it finds any.
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == EMPTY:
+                return False
+    return True
 
 
 
@@ -140,14 +145,35 @@ def minimax(board):
     # if the board is terminal, there are no moves to make.
     if terminal(board):
         return None
-    # best_move holds the position of the optimal move for the current player.
-    best_move = 0
 
-    for move in actions(board):
-        if player(board) == X:
-            best_move = max(best_move, minimax(result(board, move)))
-        else:
-            best_move = min(best_move, minimax(result(board, move)))
+    action = actions(board)
 
-    return best_move
+    #If there's only one move left, then that HAS to be the optimal move.
+    if len(action) == 1:
+        return action[0]
 
+    #Holds the value of the move you're about to make
+    value = 0
+    best_value = 0
+    #Holds the optimal move
+    next_move = []
+
+    # Goes through each move and picks the one with a value of 1
+    if player(board) == X:
+        for moves in action:
+            next_move = minimax(result(board, moves))
+            value = max(utility(board), value)
+            board[moves[0]][moves[1]] = EMPTY
+            if value == 1:
+                return moves
+
+    #Goes through each move and picks the one with a value of negative 1
+    if player(board) == O:
+        for moves in action:
+            next_move = minimax(result(board, moves))
+            value = min(utility(board), value)
+            board[moves[0]][moves[1]] = EMPTY
+            if value == -1:
+                return moves
+
+    return next_move
